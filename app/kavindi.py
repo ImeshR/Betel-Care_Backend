@@ -16,6 +16,8 @@ DEMAND_LOCATION_PREPROCESSOR_PATH = "./models/kavindi/demand/demand_preprocessor
 MARKET_DEMAND_MODEL_PATH = "./models/kavindi/market/betel_insights_model_enhanced.pkl" 
 MARKET_DEMAND_ENCODER_PATH = "./models/kavindi/market/betel_insights_encoders.pkl"
 
+SEASON_PREDICT_MODEL = './models/kavindi/season/season_prediction_model.pkl'
+
 # Load the price prediction model and encoders
 try:
     price_model = joblib.load(PRICE_MODEL_PATH)
@@ -40,6 +42,13 @@ try:
     market_demand_encoders = joblib.load(MARKET_DEMAND_ENCODER_PATH)
 except Exception as e:
     raise RuntimeError(f"Error loading market demand prediction resources: {str(e)}")
+
+
+# # Load the season prediction model
+# try:
+#     season_model = joblib.load(SEASON_PREDICT_MODEL)
+# except Exception as e:
+#     raise RuntimeError(f"Error loading season prediction resources: {str(e)}")
 
 
 # Input schema for price prediction
@@ -124,4 +133,20 @@ def predict_market_demand():
     except Exception as e:
         print("Error:", str(e))
         return jsonify({'Error in market demand prediction': str(e)}), 500
+    
+def predict_season(input_date):
+    try:
+        date_obj = pd.to_datetime(input_date)  # Automatically detects most formats
+    except ValueError:
+        return "Invalid date format"
+
+    month, day = date_obj.month, date_obj.day
+    loaded_model, loaded_encoder = joblib.load(SEASON_PREDICT_MODEL)
+
+    # Predict the season
+    predicted_season_encoded = loaded_model.predict([[month, day]])[0]
+    predicted_season = loaded_encoder.inverse_transform([predicted_season_encoded])[0]
+
+    return predicted_season
+
 
