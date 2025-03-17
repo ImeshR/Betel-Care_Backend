@@ -1,4 +1,4 @@
-from app.kavindi import DemandPredictionInput, PricePredictionInput, predict_demand_location, predict_market_demand, predict_price
+from app.kavindi import DemandPredictionInput, PricePredictionInput, predict_demand_location, predict_market_demand, predict_price, predict_season
 from flask import Blueprint, request, jsonify, render_template
 from app.model_manager import predict_yield
 from app.preprocess import preprocess_input_data
@@ -77,6 +77,21 @@ def predict_price_endpoint():
 
     if not data:
         return jsonify({"error": "No input data provided"}), 400
+    
+    # Predict the season based on the date
+    try:
+        if 'Date' in data:
+            season = predict_season(data['Date'])
+            # Validate the season value
+            if season not in ["Wet", "Rainy"]:
+                season = "Dry"  # Default fallback
+        else:
+            season = "Dry"  # Default season if date is missing
+    except Exception as e:
+        print(f"Error predicting season: {e}")
+        season = "Dry"  
+
+    data['Season'] = season
 
     input_data = PricePredictionInput(**data)  # Convert JSON into an object
 
@@ -90,7 +105,7 @@ def predict_price_endpoint():
             quality_grade=input_data.Quality_Grade,
             no_of_leaves=input_data.No_of_Leaves,
             location=input_data.Location,
-            season=input_data.Season
+            season= input_data.Season
         )
     })
 
