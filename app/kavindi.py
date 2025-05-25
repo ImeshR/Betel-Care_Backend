@@ -91,6 +91,7 @@ def predict_price(date, leaf_type, leaf_size, quality_grade, no_of_leaves, locat
         features = [[month, encoded_leaf_type, encoded_leaf_size, encoded_quality_grade, no_of_leaves, encoded_location, encoded_season]]
 
         # Predict the price
+        #use the model to predict the price
         predicted_price = price_model.predict(features)[0]
         rounded_price = round(predicted_price * 2) / 2
         return f"{rounded_price:.2f}"
@@ -101,6 +102,7 @@ def predict_price(date, leaf_type, leaf_size, quality_grade, no_of_leaves, locat
 
 # Function to predict highest demand location
 def predict_demand_location(date, no_of_leaves, leaf_type, leaf_size, quality_grade):
+
     try:
         # Convert the date to numeric month
         month = pd.to_datetime(date).month
